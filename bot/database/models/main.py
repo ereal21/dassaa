@@ -80,9 +80,6 @@ class User(Database.BASE):
     role_id = Column(Integer, ForeignKey('roles.id'), default=1)
     balance = Column(BigInteger, nullable=False, default=0)
     lottery_tickets = Column(Integer, nullable=False, default=0)
-    purchase_streak = Column(Integer, nullable=False, default=0)
-    last_purchase_date = Column(VARCHAR, nullable=True)
-    streak_discount = Column(Boolean, nullable=False, default=False)
     language = Column(String(5), nullable=True)
     referral_id = Column(BigInteger, nullable=True)
     registration_date = Column(VARCHAR, nullable=False)
@@ -92,8 +89,7 @@ class User(Database.BASE):
 
     def __init__(self, telegram_id: int, registration_date: datetime.datetime, balance: int = 0,
                  referral_id=None, role_id: int = 1, language: str | None = None,
-                 username: str | None = None, purchase_streak: int = 0,
-                 last_purchase_date: str | None = None, streak_discount: bool = False):
+                 username: str | None = None):
         self.telegram_id = telegram_id
         self.username = username
         self.role_id = role_id
@@ -101,9 +97,6 @@ class User(Database.BASE):
         self.referral_id = referral_id
         self.registration_date = registration_date
         self.language = language
-        self.purchase_streak = purchase_streak
-        self.last_purchase_date = last_purchase_date
-        self.streak_discount = streak_discount
 
 
 class Categories(Database.BASE):

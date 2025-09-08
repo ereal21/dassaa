@@ -66,7 +66,10 @@ def goods_list(list_items: list[str], category_name: str) -> InlineKeyboardMarku
     """Show all goods for a category without pagination."""
     markup = InlineKeyboardMarkup()
     for name in list_items:
-        markup.add(InlineKeyboardButton(text=display_name(name), callback_data=f'item_{name}'))
+        amount = select_item_values_amount(name)
+        markup.add(
+            InlineKeyboardButton(text=f'{display_name(name)} ({amount})', callback_data=f'item_{name}')
+        )
     markup.add(InlineKeyboardButton('🔙 Go back', callback_data='shop'))
     return markup
 
@@ -136,20 +139,12 @@ def item_info(item_name: str, category_name: str, lang: str) -> InlineKeyboardMa
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 
-def profile(user_items: int = 0, lang: str = 'en') -> InlineKeyboardMarkup:
+def profile(lang: str = 'en') -> InlineKeyboardMarkup:
     inline_keyboard = [
-        [InlineKeyboardButton(t(lang, 'games'), callback_data='games')],
-        [InlineKeyboardButton(t(lang, 'achievements'), callback_data='achievements')],
-        [InlineKeyboardButton(t(lang, 'quests'), callback_data='quests')],
-        [InlineKeyboardButton(t(lang, 'gift'), callback_data='gift')],
-        [InlineKeyboardButton(t(lang, 'stock_notify'), callback_data='notify_stock')],
+        [InlineKeyboardButton(t(lang, 'top_up'), callback_data='replenish_balance')],
+        [InlineKeyboardButton(t(lang, 'purchased_items'), callback_data='bought_items')],
+        [InlineKeyboardButton(t(lang, 'back_to_menu'), callback_data='back_to_menu')],
     ]
-    if user_items != 0:
-        inline_keyboard.append([
-            InlineKeyboardButton(t(lang, 'purchased_items'), callback_data='bought_items')
-        ])
-    inline_keyboard.append([InlineKeyboardButton(t(lang, 'help'), callback_data='help')])
-    inline_keyboard.append([InlineKeyboardButton(t(lang, 'back_to_menu'), callback_data='back_to_menu')])
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 
@@ -252,7 +247,6 @@ def console(role: int) -> InlineKeyboardMarkup:
     inline_keyboard = [
         [InlineKeyboardButton('🏪 Parduotuvės valdymas', callback_data='shop_management')],
         [InlineKeyboardButton('ℹ️ Informacija', callback_data='information')],
-        [InlineKeyboardButton('🧰 Įrankiai', callback_data='miscs')],
     ]
     inline_keyboard.append([InlineKeyboardButton('❓ Pagalba', callback_data='admin_help')])
     inline_keyboard.append([InlineKeyboardButton('🔙 Grįžti į meniu', callback_data='back_to_menu')])
@@ -352,71 +346,6 @@ def information_menu(role: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 
-def miscs_menu() -> InlineKeyboardMarkup:
-    inline_keyboard = [
-        [InlineKeyboardButton('🎟️ Loterija', callback_data='lottery')],
-        [InlineKeyboardButton('🔙 Grįžti atgal', callback_data='console')],
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
-
-
-def lottery_menu() -> InlineKeyboardMarkup:
-    inline_keyboard = [
-        [InlineKeyboardButton('📋 Peržiūrėti bilietus', callback_data='view_tickets')],
-        [InlineKeyboardButton('🎰 Vykdyti loteriją', callback_data='run_lottery')],
-        [InlineKeyboardButton('🔙 Grįžti atgal', callback_data='miscs')],
-    ]
-    if role & Permission.OWN:
-        inline_keyboard.append([InlineKeyboardButton('📦 Peržiūrėti atsargas', callback_data='view_stock')])
-    inline_keyboard.append([InlineKeyboardButton('🔙 Grįžti atgal', callback_data='console')])
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
-
-
-def miscs_menu() -> InlineKeyboardMarkup:
-    inline_keyboard = [
-        [InlineKeyboardButton('🎟️ Loterija', callback_data='lottery')],
-        [InlineKeyboardButton('🔙 Grįžti atgal', callback_data='console')],
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
-
-
-def lottery_menu() -> InlineKeyboardMarkup:
-    inline_keyboard = [
-        [InlineKeyboardButton('📋 Peržiūrėti bilietus', callback_data='view_tickets')],
-        [InlineKeyboardButton('🎰 Vykdyti loteriją', callback_data='run_lottery')],
-        [InlineKeyboardButton('🔙 Grįžti atgal', callback_data='miscs')],
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
-
-
-def lottery_run_menu(lang: str = 'en') -> InlineKeyboardMarkup:
-    inline_keyboard = [
-        [InlineKeyboardButton(t(lang, 'confirm'), callback_data='lottery_confirm')],
-        [InlineKeyboardButton(t(lang, 'rerun'), callback_data='lottery_rerun')],
-        [InlineKeyboardButton(t(lang, 'cancel'), callback_data='lottery_cancel')],
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
-
-
-def lottery_broadcast_menu(role: int, lang: str = 'en') -> InlineKeyboardMarkup:
-    inline_keyboard = []
-    if role & Permission.OWN:
-        inline_keyboard.append([InlineKeyboardButton(t(lang, 'yes'), callback_data='lottery_broadcast_yes')])
-    inline_keyboard.append([InlineKeyboardButton(t(lang, 'no'), callback_data='lottery_broadcast_no')])
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
-
-
-def information_menu(role: int) -> InlineKeyboardMarkup:
-    inline_keyboard = [
-        [InlineKeyboardButton('👥 Vartotojų valdymas', callback_data='user_management')],
-        [InlineKeyboardButton('📝 Logai', callback_data='show_logs')],
-        [InlineKeyboardButton('📊 Statistikos', callback_data='statistics')],
-        [InlineKeyboardButton('🛒 Pirkimai', callback_data='pirkimai')],
-    ]
-    if role & Permission.OWN:
-        inline_keyboard.append([InlineKeyboardButton('📦 Peržiūrėti atsargas', callback_data='view_stock')])
-    inline_keyboard.append([InlineKeyboardButton('🔙 Grįžti atgal', callback_data='console')])
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 
 def goods_management() -> InlineKeyboardMarkup:

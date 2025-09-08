@@ -50,16 +50,13 @@ from bot.utils.files import cleanup_item_file
 
 
 def build_menu_text(user_obj, balance: float, purchases: int, streak: int, lang: str) -> str:
-    """Return main menu text with loyalty status and streak."""
+    """Return main menu text with loyalty streak."""
     mention = f"<a href='tg://user?id={user_obj.id}'>{html.escape(user_obj.full_name)}</a>"
-    level_name, _, _ = get_level_info(purchases, lang)
-    status = f"👤 Status: {level_name}"
     streak_line = t(lang, 'streak', days=streak)
     return (
         f"{t(lang, 'hello', user=mention)}\n"
         f"{t(lang, 'balance', balance=f'{balance:.2f}')}\n"
         f"{t(lang, 'total_purchases', count=purchases)}\n"
-        f"{status}\n"
         f"{streak_line}\n\n"
         f"{t(lang, 'note')}"
     )

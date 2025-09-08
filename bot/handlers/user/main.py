@@ -6,7 +6,6 @@ import shutil
 from io import BytesIO
 from urllib.parse import urlparse
 import html
-import base64
 
 import qrcode
 
@@ -22,15 +21,14 @@ from bot.database.methods import (
     get_all_categories, get_all_items, select_bought_items, get_bought_item_info, get_item_info,
     select_item_values_amount, get_user_balance, get_item_value, buy_item, add_bought_item, buy_item_for_balance,
     select_user_operations, select_user_items, start_operation,
-    select_unfinished_operations, get_user_referral, finish_operation, update_balance, create_operation,
+    select_unfinished_operations, finish_operation, update_balance, create_operation,
     bought_items_list, check_value, get_subcategories, get_category_parent, get_user_language, update_user_language,
-    get_unfinished_operation, get_user_unfinished_operation, get_promocode, add_values_to_item, get_user_tickets, update_lottery_tickets,
+    get_unfinished_operation, get_user_unfinished_operation, get_promocode, add_values_to_item,
     has_user_achievement, get_achievement_users, grant_achievement, get_user_count,
     get_out_of_stock_categories, get_out_of_stock_subcategories, get_out_of_stock_items,
-    has_stock_notification, add_stock_notification, check_user_by_username, check_user_referrals,
-    sum_referral_operations,
+    has_stock_notification, add_stock_notification, check_user_by_username,
 )
-from bot.handlers.other import get_bot_user_ids, get_bot_info
+from bot.handlers.other import get_bot_user_ids
 from bot.keyboards import (
     main_menu, categories_list, goods_list, subcategories_list, user_items_list, back, item_info,
     profile, rules, payment_menu, close, crypto_choice, crypto_invoice_menu, blackjack_controls,
@@ -137,22 +135,6 @@ async def start(message: Message):
     formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
     referral_id = None
-    if len(message.text) > 7:
-        param = message.text[7:]
-        if param.startswith('ref_'):
-            encoded = param[4:]
-            try:
-                padding = '=' * (-len(encoded) % 4)
-                decoded = base64.urlsafe_b64decode(encoded + padding).decode()
-                if decoded != str(user_id):
-                    referral_id = int(decoded)
-            except Exception:
-                referral_id = None
-        elif param != str(user_id):
-            try:
-                referral_id = int(param)
-            except ValueError:
-                referral_id = None
 
     user_role = owner if str(user_id) == EnvKeys.OWNER_ID else 1
     create_user(telegram_id=user_id, registration_date=formatted_time, referral_id=referral_id, role=user_role,
@@ -1085,16 +1067,6 @@ async def buy_item_callback_handler(call: CallbackQuery):
             else:
                 add_bought_item(value_data['item_name'], value_data['value'], item_price, user_id, formatted_time)
 
-            referral_id = get_user_referral(user_id)
-            if referral_id and TgConfig.REFERRAL_PERCENT:
-                reward = round(item_price * TgConfig.REFERRAL_PERCENT / 100, 2)
-                update_balance(referral_id, reward)
-                ref_lang = get_user_language(referral_id) or 'en'
-                await bot.send_message(
-                    referral_id,
-                    t(ref_lang, 'referral_reward', amount=f'{reward:.2f}', user=call.from_user.first_name),
-                    reply_markup=close(),
-                )
             purchases = purchases_before + 1
             level_before, _, _ = get_level_info(purchases_before, lang)
             level_after, discount, _ = get_level_info(purchases, lang)
@@ -1186,8 +1158,6 @@ async def buy_item_callback_handler(call: CallbackQuery):
                     )
                 photo_desc = value_data['value']
 
-            update_lottery_tickets(user_id, 1)
-            await bot.send_message(user_id, t(lang, 'lottery_ticket_awarded'))
             process_purchase_streak(user_id)
             reserve_msg_id = TgConfig.STATE.pop(f'{user_id}_reserve_msg', None)
             if reserve_msg_id:
@@ -1543,33 +1513,21 @@ async def profile_callback_handler(call: CallbackQuery):
     user_info = check_user(user_id)
     user_lang = user_info.language or 'en'
     balance = user_info.balance
-    tickets = get_user_tickets(user_id)
     operations = select_user_operations(user_id)
     overall_balance = 0
 
     if operations:
-
         for i in operations:
             overall_balance += i
 
     items = select_user_items(user_id)
-    ref_count = check_user_referrals(user_id)
-    ref_total = sum_referral_operations(user_id)
-    ref_earnings = round(ref_total * TgConfig.REFERRAL_PERCENT / 100, 2)
-    bot_username = await get_bot_info(call)
-    encoded_id = base64.urlsafe_b64encode(str(user_id).encode()).decode().rstrip('=')
-    ref_link = f"https://t.me/{bot_username}?start=ref_{encoded_id}"
-    markup = profile(items, user_lang)
+    markup = profile(user_lang)
     await bot.edit_message_text(
         text=(
             f"👤 <b>Profile</b> — {user.first_name}\n🆔 <b>ID</b> — <code>{user_id}</code>\n"
             f"💳 <b>Balance</b> — <code>{balance}</code> €\n"
             f"💵 <b>Total topped up</b> — <code>{overall_balance}</code> €\n"
-            f"{t(user_lang, 'lottery_tickets', tickets=tickets)}\n"
-            f"{t(user_lang, 'referral_link', link=ref_link)}\n"
-            f"{t(user_lang, 'referrals', count=ref_count)}\n"
-            f"{t(user_lang, 'referral_earnings', amount=f'{ref_earnings:.2f}')}\n"
-            f" 📦 <b>Items purchased</b> — {items} pcs"
+            f"🎁 <b>Items purchased</b> — {items} pcs"
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
@@ -1814,7 +1772,6 @@ async def checking_payment(call: CallbackQuery):
         if payment_status in ("success", "paid", "finished", "confirmed", "sending"):
             current_time = datetime.datetime.now()
             formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-            referral_id = get_user_referral(user_id)
             finish_operation(label)
 
             purchase_data = TgConfig.STATE.pop(f'purchase_{label}', None)
@@ -1831,16 +1788,6 @@ async def checking_payment(call: CallbackQuery):
                         await bot.delete_message(user_id, reserve_msg_id)
                     except Exception:
                         pass
-
-                if referral_id and TgConfig.REFERRAL_PERCENT:
-                    reward = round(price * TgConfig.REFERRAL_PERCENT / 100, 2)
-                    update_balance(referral_id, reward)
-                    ref_lang = get_user_language(referral_id) or 'en'
-                    await bot.send_message(
-                        referral_id,
-                        t(ref_lang, 'referral_reward', amount=f'{reward:.2f}', user=call.from_user.first_name),
-                        reply_markup=close(),
-                    )
 
                 create_operation(user_id, operation_value, formatted_time)
                 update_balance(user_id, operation_value)
@@ -1978,8 +1925,6 @@ async def checking_payment(call: CallbackQuery):
                             )
                         except MessageNotModified:
                             pass
-                    update_lottery_tickets(user_id, 1)
-                    await bot.send_message(user_id, t(lang, 'lottery_ticket_awarded'))
                     process_purchase_streak(user_id)
                     if not has_user_achievement(user_id, 'first_purchase'):
                         grant_achievement(user_id, 'first_purchase', formatted_time)

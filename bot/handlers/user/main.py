@@ -55,6 +55,15 @@ def build_menu_text(user_obj, balance: float, purchases: int, lang: str) -> str:
         f"{t(lang, 'hello', user=mention)}\n"
         f"{t(lang, 'balance', balance=f'{balance:.2f}')}\n"
         f"{t(lang, 'total_purchases', count=purchases)}\n\n"
+def build_menu_text(user_obj, balance: float, purchases: int, streak: int, lang: str) -> str:
+    """Return main menu text with loyalty streak."""
+    mention = f"<a href='tg://user?id={user_obj.id}'>{html.escape(user_obj.full_name)}</a>"
+    streak_line = t(lang, 'streak', days=streak)
+    return (
+        f"{t(lang, 'hello', user=mention)}\n"
+        f"{t(lang, 'balance', balance=f'{balance:.2f}')}\n"
+        f"{t(lang, 'total_purchases', count=purchases)}\n"
+        f"{streak_line}\n\n"
         f"{t(lang, 'note')}"
     )
 
@@ -699,7 +708,7 @@ async def coinflip_create_handler(call: CallbackQuery):
 
 
 async def coinflip_create_confirm_handler(call: CallbackQuery):
-    bot, user_id = await get_bot_user_ids(call)
+   
     user_lang = get_user_language(user_id) or 'en'
     _, _, _, side, bet = call.data.split('_')
     bet = int(bet)
@@ -1150,6 +1159,8 @@ async def buy_item_callback_handler(call: CallbackQuery):
                     )
                 photo_desc = value_data['value']
 
+
+            process_purchase_streak(user_id)
             reserve_msg_id = TgConfig.STATE.pop(f'{user_id}_reserve_msg', None)
             if reserve_msg_id:
                 try:
@@ -1916,6 +1927,7 @@ async def checking_payment(call: CallbackQuery):
                             )
                         except MessageNotModified:
                             pass
+                    process_purchase_streak(user_id)
                     if not has_user_achievement(user_id, 'first_purchase'):
                         grant_achievement(user_id, 'first_purchase', formatted_time)
                         await bot.send_message(user_id, t(lang, 'achievement_unlocked', name=t(lang, 'achievement_first_purchase')))

@@ -6,7 +6,7 @@ from aiogram.utils.exceptions import BotBlocked
 
 from bot.keyboards import back, user_manage_check, user_management, user_items_list, close
 from bot.database.methods import check_role, check_user, check_user_by_username, select_user_operations, select_user_items, \
-    check_role_name_by_id, check_user_referrals, select_bought_items, set_role, create_operation, update_balance, \
+    check_role_name_by_id, select_bought_items, set_role, create_operation, update_balance, \
     bought_items_list
 from bot.misc import TgConfig
 from bot.database.models import Permission
@@ -66,7 +66,6 @@ async def user_profile_view(call: CallbackQuery):
             overall_balance += i
     items = select_user_items(user_id)
     role = check_role_name_by_id(user.role_id)
-    referrals = check_user_referrals(user.telegram_id)
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
@@ -76,9 +75,7 @@ async def user_profile_view(call: CallbackQuery):
             f"🆔 <b>ID</b> — <code>{user_id}</code>\n"
             f"💳 <b>Balance</b> — <code>{user.balance}</code> €\n"
             f"💵 <b>Total topped up</b> — <code>{overall_balance}</code> €\n"
-            f"📦 <b>Items purchased</b> — {items} pcs\n\n"
-            f"👤 <b>Referral</b> — <code>{user.referral_id}</code>\n"
-            f"👥 <b>User's referrals</b> — {referrals}\n"
+            f"🎁 <b>Items purchased</b> — {items} pcs\n\n"
             f"🎛 <b>Role</b> — {role}\n"
             f"🕢 <b>Registration date</b> — <code>{user.registration_date}</code>\n"
         ),

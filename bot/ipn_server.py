@@ -14,7 +14,6 @@ from bot.database.methods import (
     finish_operation,
     create_operation,
     update_balance,
-    get_user_referral,
     get_user_language,
 )
 from bot.logger_mesh import logger
@@ -63,8 +62,6 @@ def nowpayments_ipn():
             formatted_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             create_operation(user_id, value, formatted_time)
             update_balance(user_id, value)
-
-            # Referral bonuses apply only to purchases, not balance top-ups
 
             logger.info(
                 "NOWPayments IPN confirmed payment %s for user %s", payment_id, user_id

@@ -10,7 +10,7 @@ class TgConfig(ABC):
     COINFLIP_ROOMS: Final = {}
     HEADS_GIF: Final = r'C:\\Users\\eriku\\Downloads\\coin-flip-coin-flip-heads.gif'
     TAILS_GIF: Final = r'C:\\Users\\eriku\\Downloads\\coin-flip-coin-flip-tails.gif'
-    CHANNEL_URL: Final = 'https://t.me/BigLinks420'
+    CHANNEL_URL: Final = 'https://t.me/+OaGdp40TdfRmZTNk'
     HELPER_URL: Final = '@Karunele'
     PRICE_LIST_URL: Final = 'https://t.me/+iXbi98gT0v5lOTNk'
     GROUP_ID: Final = -988765433

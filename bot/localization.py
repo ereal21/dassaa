@@ -50,7 +50,6 @@ LANGUAGES = {
         'back_home': 'Back Home',
         'invoice_cancelled': 'Payment failed/expired. Your items are no longer reserved.',
         'total_purchases': '📦 Total Purchases: {count}',
-        'streak': '🔥 Streak: {days} days',
         'note': '⚠️ Note: No refunds. Please ensure you send the exact amount for payments, as underpayments will not be confirmed.',
         'rate_experience': '⭐ How was your overall experience?',
         'rate_service': 'How was your experience with the service?',
@@ -129,7 +128,6 @@ LANGUAGES = {
         'achievement_gift_sent': 'Send a gift',
         'achievement_first_referral': 'Invite a friend',
         'achievement_five_purchases': 'Buy 5 items',
-        'achievement_streak_three': '3-day purchase streak',
         'achievement_ten_referrals': 'Refer 10 friends',
         'achievement_unlocked': '🏆 Achievement unlocked: {name}',
         'show_unlocked': 'Show Unlocked',
@@ -190,7 +188,6 @@ LANGUAGES = {
         'back_home': 'Назад домой',
         'invoice_cancelled': 'Оплата не завершена/истекла. Ваши товары больше не зарезервированы.',
         'total_purchases': '📦 Всего покупок: {count}',
-        'streak': '🔥 Серия: {days} дн.',
         'note': '⚠️ Возврат средств невозможен. Отправляйте точную сумму, недоплаты не подтверждаются.',
         'rate_experience': '⭐ Как вы оцениваете общий опыт?',
         'rate_service': 'Как вы оцениваете качество сервиса?',
@@ -268,7 +265,6 @@ LANGUAGES = {
         'achievement_gift_sent': 'Отправьте подарок',
         'achievement_first_referral': 'Пригласите друга',
         'achievement_five_purchases': 'Купите 5 товаров',
-        'achievement_streak_three': 'Покупайте 3 дня подряд',
         'achievement_ten_referrals': 'Пригласите 10 друзей',
         'achievement_unlocked': '🏆 Достижение получено: {name}',
         'show_unlocked': 'Показать полученные',
@@ -327,7 +323,6 @@ LANGUAGES = {
         'back_home': 'Grįžti į pradžią',
         'invoice_cancelled': 'Mokėjimas nepavyko/baigėsi. Jūsų prekės nebėra rezervuotos.',
         'total_purchases': '📦 Viso pirkinių: {count}',
-        'streak': '🔥 Serija: {days} d.',
         'note': '⚠️ Pastaba: grąžinimų nėra. Įsitikinkite, kad siunčiate tikslią sumą, nes nepakankamos sumos nebus patvirtintos.',
         'rate_experience': '⭐ Kaip vertinate bendrą patirtį?',
         'rate_service': 'Kaip vertinate aptarnavimo kokybę?',
@@ -405,19 +400,11 @@ LANGUAGES = {
         'achievement_gift_sent': 'Išsiųskite dovaną',
         'achievement_first_referral': 'Pakvieskite draugą',
         'achievement_five_purchases': 'Nupirkite 5 prekes',
-        'achievement_streak_three': '3 dienų pirkimų serija',
         'achievement_ten_referrals': 'Pakvieskite 10 draugų',
         'achievement_unlocked': '🏆 Pasiekimas atrakintas: {name}',
         'show_unlocked': 'Rodyti pasiektus',
         'show_locked': 'Rodyti nepasiektus',
         'level_up': '🎉 Sveikiname! Pasiekėte {level} ir gavote {discount}% nuolaidą būsimiems pirkiniams.',
-
-
-        'achievement_unlocked': '🏆 Pasiekimas atrakintas: {name}',
-
-
-
-
     },
 }
 

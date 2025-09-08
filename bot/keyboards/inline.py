@@ -66,7 +66,10 @@ def goods_list(list_items: list[str], category_name: str) -> InlineKeyboardMarku
     """Show all goods for a category without pagination."""
     markup = InlineKeyboardMarkup()
     for name in list_items:
-        markup.add(InlineKeyboardButton(text=display_name(name), callback_data=f'item_{name}'))
+        amount = select_item_values_amount(name)
+        markup.add(
+            InlineKeyboardButton(text=f'{display_name(name)} ({amount})', callback_data=f'item_{name}')
+        )
     markup.add(InlineKeyboardButton('🔙 Go back', callback_data='shop'))
     return markup
 

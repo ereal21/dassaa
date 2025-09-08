@@ -27,7 +27,6 @@ class TgConfig(ABC):
         'gift_sent',
         'first_referral',
         'five_purchases',
-        'streak_three',
         'ten_referrals',
     ]
 

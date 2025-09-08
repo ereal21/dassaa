@@ -38,7 +38,6 @@ from bot.keyboards import (
     crypto_choice_purchase, notify_categories_list, notify_subcategories_list, notify_goods_list)
 
 from bot.localization import t
-from bot.database.methods.update import process_purchase_streak
 from bot.logger_mesh import logger
 from bot.misc import TgConfig, EnvKeys
 from bot.misc.payment import quick_pay, check_payment_status
@@ -49,6 +48,13 @@ from bot.utils.level import get_level_info
 from bot.utils.files import cleanup_item_file
 
 
+def build_menu_text(user_obj, balance: float, purchases: int, lang: str) -> str:
+    """Return main menu text without loyalty streak."""
+    mention = f"<a href='tg://user?id={user_obj.id}'>{html.escape(user_obj.full_name)}</a>"
+    return (
+        f"{t(lang, 'hello', user=mention)}\n"
+        f"{t(lang, 'balance', balance=f'{balance:.2f}')}\n"
+        f"{t(lang, 'total_purchases', count=purchases)}\n\n"
 def build_menu_text(user_obj, balance: float, purchases: int, streak: int, lang: str) -> str:
     """Return main menu text with loyalty streak."""
     mention = f"<a href='tg://user?id={user_obj.id}'>{html.escape(user_obj.full_name)}</a>"
@@ -94,7 +100,8 @@ def build_subcategory_description(parent: str, lang: str) -> str:
         goods = get_all_items(sub)
         for item in goods:
             info = get_item_info(item)
-            lines.append(f"    • {display_name(item)} ({info['price']:.2f}€)")
+            amount = select_item_values_amount(item)
+            lines.append(f"    • {display_name(item)} ({info['price']:.2f}€ — {amount})")
         lines.append("")
     lines.append(t(lang, 'choose_subcategory'))
     return "\n".join(lines)
@@ -162,7 +169,7 @@ async def start(message: Message):
     balance = user_db.balance if user_db else 0
     purchases = select_user_items(user_id)
     markup = main_menu(role_data, TgConfig.CHANNEL_URL, TgConfig.PRICE_LIST_URL, user_lang)
-    text = build_menu_text(message.from_user, balance, purchases, user_db.purchase_streak, user_lang)
+    text = build_menu_text(message.from_user, balance, purchases, user_lang)
     try:
         with open(TgConfig.START_PHOTO_PATH, 'rb') as photo:
             await bot.send_photo(user_id, photo)
@@ -230,7 +237,7 @@ async def back_to_menu_callback_handler(call: CallbackQuery):
     user_lang = get_user_language(user_id) or 'en'
     markup = main_menu(user.role_id, TgConfig.CHANNEL_URL, TgConfig.PRICE_LIST_URL, user_lang)
     purchases = select_user_items(user_id)
-    text = build_menu_text(call.from_user, user.balance, purchases, user.purchase_streak, user_lang)
+    text = build_menu_text(call.from_user, user.balance, purchases, user_lang)
     await bot.edit_message_text(text,
                                 chat_id=call.message.chat.id,
                                 message_id=call.message.message_id,
@@ -701,7 +708,7 @@ async def coinflip_create_handler(call: CallbackQuery):
 
 
 async def coinflip_create_confirm_handler(call: CallbackQuery):
-    bot, user_id = await get_bot_user_ids(call)
+   
     user_lang = get_user_language(user_id) or 'en'
     _, _, _, side, bet = call.data.split('_')
     bet = int(bet)
@@ -975,10 +982,7 @@ async def confirm_buy_callback_handler(call: CallbackQuery):
     lang = get_user_language(user_id) or 'en'
     purchases = select_user_items(user_id)
     _, discount, _ = get_level_info(purchases, lang)
-    user = check_user(user_id)
     price = round(info['price'] * (100 - discount) / 100, 2)
-    if user and user.streak_discount:
-        price = round(price * 0.75, 2)
 
     lang = get_user_language(user_id) or 'en'
     TgConfig.STATE[user_id] = None
@@ -1154,6 +1158,7 @@ async def buy_item_callback_handler(call: CallbackQuery):
                         reply_markup=home_markup(get_user_language(user_id) or 'en')
                     )
                 photo_desc = value_data['value']
+
 
             process_purchase_streak(user_id)
             reserve_msg_id = TgConfig.STATE.pop(f'{user_id}_reserve_msg', None)
@@ -1420,7 +1425,7 @@ async def process_home_menu(call: CallbackQuery):
     lang = get_user_language(user_id) or 'en'
     markup = main_menu(user.role_id, TgConfig.CHANNEL_URL, TgConfig.PRICE_LIST_URL, lang)
     purchases = select_user_items(user_id)
-    text = build_menu_text(call.from_user, user.balance, purchases, user.purchase_streak, lang)
+    text = build_menu_text(call.from_user, user.balance, purchases, lang)
     await bot.send_message(user_id, text, reply_markup=markup)
 
 async def bought_items_callback_handler(call: CallbackQuery):
@@ -2096,7 +2101,7 @@ async def set_language(call: CallbackQuery):
     balance = user.balance if user else 0
     markup = main_menu(role, TgConfig.CHANNEL_URL, TgConfig.PRICE_LIST_URL, lang_code)
     purchases = select_user_items(user_id)
-    text = build_menu_text(call.from_user, balance, purchases, user.purchase_streak, lang_code)
+    text = build_menu_text(call.from_user, balance, purchases, lang_code)
 
     try:
         with open(TgConfig.START_PHOTO_PATH, 'rb') as photo:
